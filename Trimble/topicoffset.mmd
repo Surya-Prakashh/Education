@@ -1,0 +1,42 @@
+graph TD
+    subgraph "Publisher Layer"
+        P["Publisher (Video Uploader)"]
+    end
+
+    subgraph "Pub/Sub Broker Core"
+        B["Broker Facade"]
+
+        subgraph "Topic: Programming"
+            T["Ordered Message Log (FIFO)"]
+            M0["Offset 0: Python Tutorial"]
+            M1["Offset 1: Java Tutorial"]
+            M2["Offset 2: C++ Tutorial"]
+
+            T --> M0
+            M0 --> M1
+            M1 --> M2
+        end
+
+        subgraph "Offset Store"
+            O1["Alice Read Cursor → Offset 2"]
+            O2["Bob Read Cursor → Offset 3"]
+            O3["Charlie Read Cursor → Offset 0"]
+        end
+    end
+
+    subgraph "Subscriber Layer"
+        Alice["Alice (Polled 2 messages)"]
+        Bob["Bob (Polled 3 messages)"]
+        Charlie["Charlie (Has not polled yet)"]
+    end
+
+    P -->|"publish('Programming', payload)"| B
+    B -->|"Append Message"| T
+
+    Alice -->|"poll('Alice', 'Programming')"| B
+    Bob -->|"poll('Bob', 'Programming')"| B
+    Charlie -->|"Subscribed"| B
+
+    B -.->|"Advance Cursor"| O1
+    B -.->|"Advance Cursor"| O2
+    B -.->|"Track Cursor"| O3

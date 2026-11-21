@@ -1,0 +1,57 @@
+{
+  "topics": {
+    "Programming": [
+      {
+        "id": "video_101",
+        "title": "Python Tutorial",
+        "uploader": "TechChannel",
+        "duration_minutes": 15,
+        "tags": ["python", "programming", "beginner"]
+      },
+      {
+        "id": "video_102",
+        "title": "Java Tutorial",
+        "uploader": "TechChannel",
+        "duration_minutes": 25,
+        "tags": ["java", "oop", "enterprise"]
+      },
+      {
+        "id": "video_103",
+        "title": "C++ Tutorial",
+        "uploader": "TechChannel",
+        "duration_minutes": 40,
+        "tags": ["cpp", "systems", "performance"]
+      }
+    ],
+    "DataScience": [
+      {
+        "id": "ds_201",
+        "title": "Pandas & Numpy Crash Course",
+        "uploader": "DataWizard",
+        "duration_minutes": 30,
+        "tags": ["pandas", "python", "datascience"]
+      },
+      {
+        "id": "ds_202",
+        "title": "Machine Learning Fundamentals",
+        "uploader": "DataWizard",
+        "duration_minutes": 45,
+        "tags": ["ml", "scikit-learn", "ai"]
+      },
+      {
+        "id": "ds_203",
+        "title": "Deep Learning with PyTorch",
+        "uploader": "DataWizard",
+        "duration_minutes": 60,
+        "tags": ["pytorch", "deeplearning", "neural-networks"]
+      },
+      {
+        "id": "ds_204",
+        "title": "LLM Fine-Tuning Guide",
+        "uploader": "DataWizard",
+        "duration_minutes": 50,
+        "tags": ["llm", "transformers", "genai"]
+      }
+    ]
+  }
+}

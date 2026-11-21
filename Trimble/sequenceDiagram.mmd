@@ -1,0 +1,40 @@
+sequenceDiagram
+    autonumber
+    actor Publisher
+    participant Broker as Broker Facade
+    participant Topic as Topic ("Programming")
+    participant OffsetStore as InMemoryOffsetStore
+    actor Subscriber as Subscriber ("Alice")
+
+    rect rgb(240, 248, 255)
+        Note over Subscriber, OffsetStore: 1. Subscription Phase
+        Subscriber->>Broker: subscribe("Alice", "Programming")
+        Broker->>Broker: _get_or_create_topic("Programming")
+        Broker->>OffsetStore: subscribe("Alice", "Programming")
+        Note over OffsetStore: Set ("Alice", "Programming") = Offset 0
+    end
+
+    rect rgb(245, 255, 245)
+        Note over Publisher, Topic: 2. Publish Phase
+        Publisher->>Broker: publish("Programming", "Payload Data")
+        Broker->>Broker: _get_or_create_topic("Programming")
+        Broker->>Topic: append("Payload Data")
+        Note over Topic: Acquire Topic _lock<br/>Assign offset = len(_messages)<br/>Append Message object
+        Topic-->>Broker: Message(offset=0)
+        Broker-->>Publisher: Return offset 0
+    end
+
+    rect rgb(255, 245, 238)
+        Note over Subscriber, OffsetStore: 3. Poll / Consumption Phase
+        Subscriber->>Broker: poll("Alice", "Programming", max_messages=10)
+        Broker->>OffsetStore: is_subscribed("Alice", "Programming")
+        OffsetStore-->>Broker: True
+        Broker->>OffsetStore: get_offset("Alice", "Programming")
+        OffsetStore-->>Broker: current_offset = 0
+        Broker->>Topic: read_from(start_offset=0, max_messages=10)
+        Note over Topic: Acquire Topic _lock<br/>Slice _messages[0:10]
+        Topic-->>Broker: [Message(offset=0)]
+        Broker->>OffsetStore: advance("Alice", "Programming", new_offset=1)
+        Note over OffsetStore: Update ("Alice", "Programming") -> Offset 1
+        Broker-->>Subscriber: [Message(offset=0)]
+    end

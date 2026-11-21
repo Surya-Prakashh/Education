@@ -1,0 +1,45 @@
+flowchart TD
+    subgraph Clients["Client Layer"]
+        Pub["Publisher Client"]
+        Sub1["Subscriber: Alice"]
+        Sub2["Subscriber: Bob"]
+    end
+
+    subgraph BrokerCore["Broker Core System (broker.py)"]
+        Broker["Broker Facade Orchestrator"]
+        TopicsLock["Topics Lock (_topics_lock)"]
+    end
+
+    subgraph TopicStorage["Topic Storage Layer"]
+        TopicMap["Topics Registry (_topics dict)"]
+        TLock["Topic Lock (_lock)"]
+        Log["Message Sequence (_messages list)"]
+        M0["Message (Offset 0)"]
+        M1["Message (Offset 1)"]
+        M2["Message (Offset 2)"]
+    end
+
+    subgraph OffsetManagement["Offset Management Layer"]
+        OffsetInterface["OffsetStore Abstract Class"]
+        InMemoryStore["InMemoryOffsetStore"]
+        OffsetLock["OffsetStore Lock (_lock)"]
+        OffsetMap["Offsets Map (_offsets dict)"]
+    end
+
+    Pub -->|"1. publish(topic, payload)"| Broker
+    Sub1 -->|"2a. subscribe(consumer_id, topic)"| Broker
+    Sub1 -->|"2b. poll(consumer_id, topic, max_messages)"| Broker
+    Sub2 -->|"3. poll(consumer_id, topic, max_messages)"| Broker
+
+    Broker -->|"Double-Checked Locking"| TopicsLock
+    Broker -->|"Delegates to Topic"| TopicMap
+    TopicMap --> TLock
+    TLock --- Log
+    Log --> M0
+    Log --> M1
+    Log --> M2
+
+    Broker -->|"Tracks Read Cursors"| InMemoryStore
+    InMemoryStore -.->|"Implements"| OffsetInterface
+    InMemoryStore --- OffsetLock
+    InMemoryStore --- OffsetMap

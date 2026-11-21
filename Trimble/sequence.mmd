@@ -1,0 +1,46 @@
+sequenceDiagram
+    autonumber
+    actor Publisher as Publisher (Video Uploader)
+    participant Broker as Pub/Sub Broker
+    participant Topic as Topic: "Programming"
+    actor Alice as Subscriber: Alice
+    actor Bob as Subscriber: Bob
+    actor Charlie as Subscriber: Charlie
+
+    %% Subscriptions
+    Alice->>Broker: subscribe("Alice", "Programming")
+    Bob->>Broker: subscribe("Bob", "Programming")
+    Charlie->>Broker: subscribe("Charlie", "Programming")
+    Note over Broker: Cursors initialized:<br/>Alice = offset 0<br/>Bob = offset 0<br/>Charlie = offset 0
+
+    %% Publishing Videos
+    Publisher->>Broker: publish("Programming", "Python Tutorial")
+    Broker->>Topic: append("Python Tutorial")
+    Topic-->>Broker: assigned offset = 0
+
+    Publisher->>Broker: publish("Programming", "Java Tutorial")
+    Broker->>Topic: append("Java Tutorial")
+    Topic-->>Broker: assigned offset = 1
+
+    Publisher->>Broker: publish("Programming", "C++ Tutorial")
+    Broker->>Topic: append("C++ Tutorial")
+    Topic-->>Broker: assigned offset = 2
+
+    %% Polling by Subscribers
+    rect rgb(240, 248, 255)
+    Note over Alice, Broker: Alice polls (Reads up to 2 videos)
+    Alice->>Broker: poll("Alice", "Programming", max_messages=2)
+    Broker->>Topic: read_from(offset=0, limit=2)
+    Topic-->>Broker: ["Python Tutorial", "Java Tutorial"]
+    Broker-->>Alice: [Offset 0: Python, Offset 1: Java]
+    Note over Broker: Alice cursor advances: 0 ➔ 2
+    end
+
+    rect rgb(255, 245, 238)
+    Note over Bob, Broker: Bob polls independently (Reads all 3 videos)
+    Bob->>Broker: poll("Bob", "Programming", max_messages=3)
+    Broker->>Topic: read_from(offset=0, limit=3)
+    Topic-->>Broker: ["Python Tutorial", "Java Tutorial", "C++ Tutorial"]
+    Broker-->>Bob: [Offset 0: Python, Offset 1: Java, Offset 2: C++]
+    Note over Broker: Bob cursor advances: 0 ➔ 3
+    end
